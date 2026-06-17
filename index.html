@@ -8,7 +8,31 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app" id="app"></div>
+  <div class="topbar" id="page-topbar">
+    <button class="view-btn" id="theme-btn" onclick="toggleTheme()">Dark theme</button>
+    <button class="view-btn" id="lang-btn" onclick="changeLanguage()">Lang</button>
+  </div>
+
+  <div  id="app">
+
+    <div class="app" id="browse-tab">
+      <div id="browse-search">
+        
+      </div>
+      <div id="browse-pills"></div>
+      <div id="browse-results"></div>
+    </div>
+
+    <div class="app" id="add-tab">
+
+    </div>
+
+    <div class="app" id="detail-tab">
+
+    </div>
+  </div>
+  
   <script src="script.js"></script>
+  <script src="theme-toggle.js"></script>
 </body>
 </html>

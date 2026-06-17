@@ -25,6 +25,65 @@ let searchQ = '';
 let ingFilter = '';
 let uploadedImageData = null;
 
+// ── Language ───────────────────────────────────────────────────────────────────
+
+const langsList = 
+{
+  english: {
+    Add: 'Add',
+    All: 'All',
+    Back: 'Back',
+
+    Browse_head: 'Recipes',
+    Browse_search_1: 'Search recipes or ingredients…',
+    Browse_search_span: 'Filter by ingredients I have (comma-separated)',
+    Browse_search_2: 'e.g. eggs, garlic, lemon',
+    Browse_tags: ['Savory', 'Sweet'],
+    Browse_noresult: 'No recipes match — try different filters or add one.',
+
+    Deatils_Ingredients: 'Ingredients',
+    Details_Instructions: 'Instructions',
+    Deatails_UnitsConverted: 'Some units have been converted from imperial to metric. Original values shown in brackets.',
+    Details_Servings: 'Servings',
+
+    Savory: 'Savory',
+    Sweet: 'Sweet'
+
+      
+  },
+
+  finnish: {
+    Add: 'Lisää',
+    All: 'Kaikki',
+    Back: 'Takaisin',
+
+    Browse_head: 'Reseptit',
+    Browse_search_1: 'Etsi reseptejä tai ainesosia…',
+    Browse_search_span: 'Suodata ainesosien perusteella (erotetaan pilkulla)',
+    Browse_search_2: 'esim. muna, valkosipuli, sitruuna',
+    Browse_tags: ['Suolainen', 'Makea'],
+    Browse_noresult: 'Ei tuloksia — yritä eri suodattimia.',
+
+    Deatils_Ingredients: 'Ainesosat',
+    Details_Instructions: 'Valmistusohjeet',
+    Deatails_UnitsConverted: 'Joitain arvoja on muunnettu metrijärjestelmään. Alkuperäiset suluissa.',
+    Details_Servings: 'Annokset',
+
+    Savory: 'Suolainen',
+    Sweet: 'Makea'
+  }
+}
+
+let currentLang = localStorage.getItem('language') ?? 'english';
+let language = langsList[currentLang];
+
+function changeLanguage() {
+  currentLang = currentLang === 'english' ? 'finnish' : 'english';
+  language = langsList[currentLang];
+  localStorage.setItem('language', currentLang);
+  render();
+}
+
 // ── Sample data (shown when collection is empty) ──────────────────────────────
 
 const SAMPLE = [
@@ -100,11 +159,12 @@ function convertIngredient(ing) {
 
   // Volume: imperial → ml → closest metric label
   let ml = null;
-  if (u === 'cup' || u === 'cups')                                                          ml = a * 240;
-  if (u === 'fl oz' || u === 'fl.oz' || u === 'fluid oz' || u === 'fluid ounce' || u === 'fluid ounces') ml = a * 29.57;
-  if (u === 'pint' || u === 'pints' || u === 'pt')                                         ml = a * 473;
-  if (u === 'quart' || u === 'quarts' || u === 'qt')                                       ml = a * 946;
-  if (u === 'gallon' || u === 'gallons' || u === 'gal')                                    ml = a * 3785;
+  if (u === 'cup' || u === 'cups')                              ml = a * 240;
+  if (u === 'fl oz' || u === 'fl.oz' || u === 'fluid oz' || 
+    u === 'fluid ounce' || u === 'fluid ounces')                ml = a * 29.57;
+  if (u === 'pint' || u === 'pints' || u === 'pt')              ml = a * 473;
+  if (u === 'quart' || u === 'quarts' || u === 'qt')            ml = a * 946;
+  if (u === 'gallon' || u === 'gallons' || u === 'gal')         ml = a * 3785;
 
   if (ml !== null) {
     const { amount: ca, unit: cu } = closestVolumeUnit(ml);
@@ -156,36 +216,66 @@ function fmtAmount(amount, mult) {
 // ── Render ────────────────────────────────────────────────────────────────────
 
 function render() {
-  const app = document.getElementById('app');
-  if (view === 'browse') app.innerHTML = renderBrowse();
-  else if (view === 'add') app.innerHTML = renderAdd();
-  else if (view === 'detail') app.innerHTML = renderDetail();
-  else if (view === 'cook') app.innerHTML = renderCook();
+  const browseTab  = document.getElementById('browse-tab');
+  const addTab     = document.getElementById('add-tab');
+  const detailTab  = document.getElementById('detail-tab');
+
+  browseTab.style.display  = 'none';
+  addTab.style.display     = 'none';
+  detailTab.style.display  = 'none';
+
+  if (view === 'browse') {
+    browseTab.style.display = 'block';
+    renderSearch();
+    renderPills();
+    renderResults();
+  } else if (view === 'add') {
+    addTab.style.display = 'block';
+    renderAdd();
+  } else if (view === 'detail') {
+    detailTab.style.display = 'block';
+    renderDetail();
+  }
+
   attachEvents();
 }
 
-function renderBrowse() {
-  const tags = allTags();
-  const list = filteredRecipes();
-  return `
+function renderSearch() {
+  const div = document.getElementById('browse-search');
+  div.innerHTML = `
     <div class="topbar">
-      <h1><i class="ti ti-chef-hat" aria-hidden="true" style="margin-right:8px"></i>Recipes</h1>
+      <h1><i class="ti ti-chef-hat" aria-hidden="true" style="margin-right:8px"></i>${language.Browse_head}</h1>
       <div style="display:flex;gap:8px">
         <button class="view-btn active" data-v="browse"><i class="ti ti-layout-grid"></i></button>
-        <button class="view-btn" data-v="add"><i class="ti ti-plus"></i> Add</button>
+        <button class="view-btn" data-v="add"><i class="ti ti-plus"></i> ${language.Add}</button>
       </div>
     </div>
     <div class="search-row">
-      <input type="text" placeholder="Search recipes or ingredients…" id="sq" value="${searchQ}">
+      <input type="text" placeholder="${language.Browse_search_1}" id="sq" value="${searchQ}">
     </div>
-    <span class="ing-label">Filter by ingredients I have (comma-separated)</span>
-    <input type="text" placeholder="e.g. eggs, garlic, lemon" id="iq" value="${ingFilter}">
+    <span class="ing-label">${language.Browse_search_span}</span>
+    <input type="text" placeholder="${language.Browse_search_2}" id="iq" value="${ingFilter}">
+  `;
+}
+
+function renderPills() {
+  const div = document.getElementById('browse-pills');
+  div.innerHTML = `
     <div class="filter-row">
-      <button class="tag-btn${filterTag === 'all' ? ' active' : ''}" data-tag="all">All</button>
-      ${tags.map(t => `<button class="tag-btn${filterTag === t ? ' active' : ''}" data-tag="${t}">${t}</button>`).join('')}
+      <button class="tag-btn${filterTag === 'all' ? ' active' : ''}" data-tag="all">${language.All}</button>
+      <button class="tag-btn${filterTag === 'savory' ? ' active' : ''}" data-tag="savory">${language.Savory}</button>
+      <button class="tag-btn${filterTag === 'sweet' ? ' active' : ''}" data-tag="sweet">${language.Sweet}</button>
     </div>
+  `;
+}
+
+function renderResults() {
+  const tags = allTags();
+  const list = filteredRecipes();
+  const div = document.getElementById('browse-results');
+  div.innerHTML = `
     ${list.length === 0
-      ? `<div class="empty"><i class="ti ti-inbox" aria-hidden="true"></i>No recipes match — try different filters or add one.</div>`
+      ? `<div class="empty"><i class="ti ti-inbox" aria-hidden="true"></i>${language.Browse_noresult}</div>`
       : `<div class="grid">${list.map(r => `
           <div class="recipe-card" data-id="${r.id}">
             <h3>${r.name}</h3>
@@ -197,7 +287,8 @@ function renderBrowse() {
 }
 
 function renderAdd() {
-  return `
+  const div = document.getElementById('add-tab');
+  div.innerHTML = `
     <div class="topbar">
       <button class="view-btn" data-v="browse"><i class="ti ti-arrow-left"></i> Back</button>
       <h1>Add recipe</h1>
@@ -224,34 +315,39 @@ function renderAdd() {
 
 function renderDetail() {
   const r = getRecipes().find(x => x.id === detailId);
-  if (!r) return renderBrowse();
+  const div = document.getElementById('detail-tab');
+  if (!r) { view = 'browse'; render(); return; }
   const mult = servingsMultiplier;
   const isUser = recipes.find(x => x.id === detailId);
-  return `
+  div.innerHTML = `
     <div class="topbar">
-      <button class="view-btn" data-v="browse"><i class="ti ti-arrow-left"></i> Back</button>
+      <button class="view-btn" data-v="browse"><i class="ti ti-arrow-left"></i> ${language.Back}</button>
       <h1>${r.name}</h1>
       ${isUser ? `<button class="btn-danger" id="delete-btn" aria-label="Delete recipe"><i class="ti ti-trash" aria-hidden="true"></i></button>` : ''}
     </div>
+
     <div class="detail">
+
       <div class="detail-meta">
         <span><i class="ti ti-clock" aria-hidden="true"></i>${r.time} min</span>
         ${r.tags.map(t => `<span class="pill">${t}</span>`).join('')}
       </div>
       ${r.hasConversions ? `
+
         <div class="conversion-notice">
           <i class="ti ti-refresh" aria-hidden="true"></i>
-          Some units have been converted from imperial to metric. Original values shown in brackets.
+          ${language.Deatails_UnitsConverted}
         </div>` : ''}
+
       <div class="servings-ctrl">
-        <span>Servings</span>
+        <span>${language.Details_Servings}</span>
         <button class="sctl-btn" id="serv-down" aria-label="Fewer servings">−</button>
         <span class="count" id="serv-count">${Math.round(r.servings * mult)}</span>
         <button class="sctl-btn" id="serv-up" aria-label="More servings">+</button>
-        <button class="btn-primary" id="cook-btn" style="margin-left:auto">Start cooking</button>
       </div>
+
       <div>
-        <h3 style="font-size:16px;font-weight:500;margin-bottom:12px">Ingredients</h3>
+        <h3 style="font-size:16px;font-weight:500;margin-bottom:12px">${language.Deatils_Ingredients}</h3>
         <div class="ingredients-list">
           ${r.ingredients.map(i => `
             <div class="ing-row">
@@ -260,8 +356,9 @@ function renderDetail() {
             </div>`).join('')}
         </div>
       </div>
+
       <div>
-        <h3 style="font-size:16px;font-weight:500;margin-bottom:12px">Method</h3>
+        <h3 style="font-size:16px;font-weight:500;margin-bottom:12px">${language.Details_Instructions}</h3>
         <div class="steps-list">
           ${r.steps.map((s, i) => `
             <div class="step-row">
@@ -273,27 +370,42 @@ function renderDetail() {
     </div>`;
 }
 
-function renderCook() {
-  const r = getRecipes().find(x => x.id === detailId);
-  if (!r) return renderBrowse();
-  return `
-    <div class="topbar">
-      <button class="view-btn" data-v="detail"><i class="ti ti-arrow-left"></i> Recipe</button>
-      <h1 style="font-size:16px">Cooking: ${r.name}</h1>
-    </div>
-    <div class="cooking-mode">
-      ${r.steps.map((s, i) => `
-        <div class="step-row cooking-step${cookingSteps.includes(i) ? ' done' : ''}" data-step="${i}">
-          <div class="step-num">
-            ${cookingSteps.includes(i) ? '<i class="ti ti-check" aria-hidden="true"></i>' : i + 1}
-          </div>
-          <div class="step-text">${s}</div>
-        </div>`).join('')}
-    </div>
-    <p class="hint">Tap a step to mark it done</p>`;
-}
-
 // ── Events ────────────────────────────────────────────────────────────────────
+
+// Tag filters
+document.getElementById('browse-pills').addEventListener('click', e => {
+  const btn = e.target.closest('[data-tag]');
+  if (btn) {
+    filterTag = btn.dataset.tag;
+    renderPills();
+    renderResults();
+  }
+});
+
+// Recipe card click
+document.getElementById('browse-results').addEventListener('click', e => {
+  const card = e.target.closest('[data-id]');
+  if (card) {
+    detailId = card.dataset.id;
+    servingsMultiplier = 1;
+    view = 'detail';
+    render();
+  }
+});
+
+// Search
+const sq = document.getElementById('sq');
+if (sq) sq.addEventListener('input', e => {
+  searchQ = e.target.value;
+  renderResults();
+});
+
+// Ingredient filter
+const iq = document.getElementById('iq');
+if (iq) iq.addEventListener('input', e => {
+  ingFilter = e.target.value;
+  renderResults();
+});
 
 function attachEvents() {
   // Navigation
@@ -304,29 +416,6 @@ function attachEvents() {
       render();
     });
   });
-
-  // Tag filters
-  document.querySelectorAll('[data-tag]').forEach(b => {
-    b.addEventListener('click', () => { filterTag = b.dataset.tag; render(); });
-  });
-
-  // Recipe card click
-  document.querySelectorAll('[data-id]').forEach(b => {
-    b.addEventListener('click', () => {
-      detailId = b.dataset.id;
-      servingsMultiplier = 1;
-      view = 'detail';
-      render();
-    });
-  });
-
-  // Search
-  const sq = document.getElementById('sq');
-  if (sq) sq.addEventListener('input', e => { searchQ = e.target.value; render(); });
-
-  // Ingredient filter
-  const iq = document.getElementById('iq');
-  if (iq) iq.addEventListener('input', e => { ingFilter = e.target.value; render(); });
 
   // Servings
   const r = getRecipes().find(x => x.id === detailId);
@@ -341,20 +430,6 @@ function attachEvents() {
     const cur = Math.round(r.servings * servingsMultiplier);
     servingsMultiplier = (cur + 1) / r.servings;
     render();
-  });
-
-  // Start cooking
-  const cb = document.getElementById('cook-btn');
-  if (cb) cb.addEventListener('click', () => { cookingSteps = []; view = 'cook'; render(); });
-
-  // Cooking step toggle
-  document.querySelectorAll('.cooking-step').forEach(el => {
-    el.addEventListener('click', () => {
-      const i = parseInt(el.dataset.step);
-      if (cookingSteps.includes(i)) cookingSteps = cookingSteps.filter(x => x !== i);
-      else cookingSteps.push(i);
-      render();
-    });
   });
 
   // Delete recipe
@@ -419,10 +494,10 @@ async function parseRecipe() {
     type: 'text',
     text: `Extract the recipe and return ONLY a JSON object (no markdown, no backticks) with this exact shape:
 {"name":"string","servings":number,"time":number,"tags":["string"],"ingredients":[{"name":"string","amount":number,"unit":"string"}],"steps":["string"]}
-- time is total minutes (estimate if not given)
-- tags: 2-4 short lowercase tags like pasta, quick, vegetarian, healthy, fish, soup
-- unit can be g, kg, ml, l, tbsp, tsp, dl, cup, oz, lb, fl oz, or empty string for countable items — preserve the original unit from the source exactly, do not convert units yourself
-- steps are plain strings without step numbers`
+- time: integer in total minutes (estimate if not given, no unit)
+- tags: 'Sweet' or 'Savory' (Only one!)
+- unit: can be g, kg, ml, l, tbsp, tsp, dl, cup, oz, lb, fl oz, or empty string for countable items — preserve the original unit from the source exactly, do not convert units yourself
+- steps: list. plain strings without step numbers`
   });
 
   try {
