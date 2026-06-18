@@ -27,6 +27,7 @@
   --border-hover: rgba(60,90,40,0.26);
   --border-strong:rgba(60,90,40,0.38);
 
+  --radius: 10px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -63,7 +64,7 @@ body {
 }
 
 /* Inputs & buttons — base styles */
-input[type=text], input[type=search], textarea, select {
+input[type=text], input[type=search], input[type=number], textarea, select {
   width: 100%;
   font-family: var(--font);
   font-size: 14px;
@@ -138,6 +139,14 @@ button:active { transform: scale(0.98); }
   gap: 8px;
   margin-bottom: 1rem;
 }
+
+.ing-header {
+  font-size: 14px;
+  color: var(--text);
+  display: block;
+  margin-bottom: 4px;
+}
+
 .ing-label {
   font-size: 12px;
   color: var(--text-secondary);

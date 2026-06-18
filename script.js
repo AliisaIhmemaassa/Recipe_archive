@@ -66,7 +66,7 @@ const langsList =
 
     Details_Ingredients: 'Ainesosat',
     Details_Instructions: 'Valmistusohjeet',
-    Deatails_UnitsConverted: 'Joitain arvoja on muunnettu metrijärjestelmään. Alkuperäiset suluissa.',
+    Details_UnitsConverted: 'Joitain arvoja on muunnettu metrijärjestelmään. Alkuperäiset suluissa.',
     Details_Servings: 'Annokset',
 
     Savory: 'Suolainen',
@@ -92,23 +92,27 @@ const SAMPLE = [
     name: 'Classic Pasta Carbonara',
     servings: 2,
     time: 25,
-    tags: ['pasta', 'quick'],
-    ingredients: [
-      { name: 'spaghetti', amount: 200, unit: 'g', original: null },
-      { name: 'pancetta', amount: 100, unit: 'g', original: null },
-      { name: 'eggs', amount: 2, unit: '', original: null },
-      { name: 'parmesan', amount: 50, unit: 'g', original: null },
-      { name: 'black pepper', amount: 1, unit: 'tsp', original: null }
-    ],
-    steps: [
-      'Boil salted water and cook spaghetti until al dente.',
-      'Fry pancetta in a pan until crispy. Remove from heat.',
-      'Whisk eggs with half the parmesan and pepper.',
-      'Drain pasta, reserving 1 cup water.',
-      'Toss hot pasta into the pancetta pan off heat.',
-      'Add egg mixture, tossing quickly and adding pasta water to loosen.',
-      'Serve with remaining parmesan.'
-    ],
+    tags: ['Savory'],
+    ingredients: {
+      none: [
+        { name: 'spaghetti',     amounts: [{ amount: 200, unit: 'g'   }] },
+        { name: 'pancetta',      amounts: [{ amount: 100, unit: 'g'   }] },
+        { name: 'eggs',          amounts: [{ amount: 2,   unit: ''    }] },
+        { name: 'parmesan',      amounts: [{ amount: 50,  unit: 'g'   }] },
+        { name: 'black pepper',  amounts: [{ amount: 1,   unit: 'tsp' }] }
+      ]
+    },
+    steps: {
+      none: [
+        'Boil salted water and cook spaghetti until al dente.',
+        'Fry pancetta in a pan until crispy. Remove from heat.',
+        'Whisk eggs with half the parmesan and pepper.',
+        'Drain pasta, reserving 1 cup water.',
+        'Toss hot pasta into the pancetta pan off heat.',
+        'Add egg mixture, tossing quickly and adding pasta water to loosen.',
+        'Serve with remaining parmesan.'
+      ]
+    },
     hasConversions: false
   },
   {
@@ -116,21 +120,25 @@ const SAMPLE = [
     name: 'Lemon Garlic Salmon',
     servings: 4,
     time: 20,
-    tags: ['fish', 'healthy'],
-    ingredients: [
-      { name: 'salmon fillets', amount: 4, unit: '', original: null },
-      { name: 'garlic cloves', amount: 3, unit: '', original: null },
-      { name: 'lemon', amount: 1, unit: '', original: null },
-      { name: 'olive oil', amount: 2, unit: 'tbsp', original: null },
-      { name: 'fresh dill', amount: 1, unit: 'tbsp', original: null }
-    ],
-    steps: [
-      'Preheat oven to 200°C.',
-      'Mix oil, minced garlic, lemon zest and juice.',
-      'Place salmon on a baking tray and pour over the mixture.',
-      'Bake for 12–15 minutes until cooked through.',
-      'Garnish with dill and serve immediately.'
-    ],
+    tags: ['Savory'],
+    ingredients: {
+      none: [
+        { name: 'salmon fillets', amounts: [{ amount: 4, unit: ''     }] },
+        { name: 'garlic cloves',  amounts: [{ amount: 3, unit: ''     }] },
+        { name: 'lemon',          amounts: [{ amount: 1, unit: ''     }] },
+        { name: 'olive oil',      amounts: [{ amount: 2, unit: 'tbsp' }] },
+        { name: 'fresh dill',     amounts: [{ amount: 1, unit: 'tbsp' }] }
+      ]
+    },
+    steps: {
+      none: [
+        'Preheat oven to 200°C.',
+        'Mix oil, minced garlic, lemon zest and juice.',
+        'Place salmon on a baking tray and pour over the mixture.',
+        'Bake for 12–15 minutes until cooked through.',
+        'Garnish with dill and serve immediately.'
+      ]
+    },
     hasConversions: false
   }
 ];
@@ -139,10 +147,10 @@ const SAMPLE = [
 
 function closestVolumeUnit(ml) {
   if (ml < 5)   return { amount: parseFloat((ml / 5).toFixed(2)), unit: 'tl' };
-  if (ml < 20)  return { amount: parseFloat((ml / 5).toFixed(1)), unit: 'tl' };
-  if (ml < 60)  return { amount: parseFloat((ml / 15).toFixed(1)), unit: 'rkl' };
-  if (ml < 900) return { amount: parseFloat((ml / 100).toFixed(1)), unit: 'dl' };
-  return { amount: parseFloat((ml / 1000).toFixed(2)), unit: 'l' };
+  if (ml < 20)  return { amount: parseFloat((ml / 5).toFixed(2)), unit: 'tl' };
+  if (ml < 60)  return { amount: parseFloat((ml / 15).toFixed(2)), unit: 'rkl' };
+  if (ml < 900) return { amount: parseFloat((ml / 100).toFixed(2)), unit: 'dl' };
+  return { amount: parseFloat((ml / 1000).toFixed(3)), unit: 'l' };
 }
 
 function convertIngredient(ing) {
@@ -215,7 +223,7 @@ function filteredRecipes() {
 
 function fmtAmount(amount, mult) {
   const v = amount * mult;
-  return v % 1 === 0 ? v : parseFloat(v.toFixed(1));
+  return v % 1 === 0 ? v : parseFloat(v.toFixed(2));
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
@@ -278,6 +286,7 @@ function renderPills() {
 }
 
 function renderResults() {
+  // im in card <div class="recipe-card" data-id="${r.id}" ${r.image ? `style="background-image:url('${r.image}');background-size:cover;background-position:center;"` : ''}>
   const tags = allTags();
   const list = filteredRecipes();
   const div = document.getElementById('browse-results');
@@ -331,6 +340,7 @@ function renderAdd() {
 }
 
 function renderDetail() {
+  //<span class="ing-amount">${i.amounts.map(a => `${fmtAmount(a.amount, mult)} ${a.unit}`).join(' / ')}</span>
   const r = getRecipes().find(x => x.id === detailId);
   const div = document.getElementById('detail-tab');
   if (!r) { view = 'browse'; render(); return; }
@@ -375,7 +385,10 @@ function renderDetail() {
             ${header !== 'none' ? `<div class="ing-header">${header}</div>` : ''}
             ${ings.map(i => `
               <div class="ing-row">
-                <span class="ing-amount">${i.amounts.map(a => `${fmtAmount(a.amount, mult)} ${a.unit}`).join(' / ')}</span>
+                <span class="ing-amount">
+                  ${i.amounts.map(a => a.amount === 0 ? '' : `${fmtAmount(a.amount, mult)} ${a.unit}`)
+                    .filter(Boolean).join(' / ')}
+                </span>
                 <span>${i.name}</span>
               </div>`).join('')}
           `).join('')}
@@ -639,7 +652,7 @@ async function parseRecipe() {
     text: `Extract the recipe and return ONLY a JSON object (no markdown, no backticks) with this exact shape:
 {"name":"string","servings":number,"time":number,"tags":["string"],"ingredients":{"Header name":[{"name":"string","amounts":[{"amount":number,"unit":"string"}]}]},"steps":{"Section name":["string"]}}
 - time: integer in total minutes (estimate if not given, no unit)
-- tags: 'Sweet' or 'Savory' (Only one!)
+- tags: 'sweet' or 'savory' (Only one!)
 - ingredients is an object where keys are section headers (use "none" if no sections)
 - if an ingredient has multiple amounts/units (e.g. "5dl (300g)"), list each as a separate object in amounts
 - if only one amount, amounts still has just one entry
