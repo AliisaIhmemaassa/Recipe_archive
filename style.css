@@ -127,7 +127,7 @@ a:focus-visible {
 
 .lock-box {
     background: var(--surface); border: 0.5px solid var(--border);
-    border-radius: 12px; padding: 2rem; width: 320px; text-align: center;
+    border-radius: 12px; padding: 2rem; width: 380px; text-align: center;
 }
 .lock-box h2 { font-size: 17px; font-weight: 500; margin-bottom: 6px; color: var(--text); }
 .lock-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 1.25rem; }

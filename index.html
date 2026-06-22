@@ -8,23 +8,21 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="topbar" id="page-topbar">
-    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()"></button>
-    <button class="lang-btn" id="lang-btn" onclick="changeLanguage()"></button>
-  </div>
 
   <div id="lock-screen" class="lock-screen">
-    <div id="lock-box" class="lock-box">
-      <h2>Varauskalenteri</h2>
-      <p>Anna salasana jatkaaksesi</p>
-      <input type="email" id="email-input" placeholder="Email">
-      <input type="password" id="lock-input" placeholder="Salasana">
-      <button id="lock-btn" class="lock-btn" onclick="unlock()">Kirjaudu sisään</button>
-      <div id="lock-error" class="lock-error">Väärä salasana, yritä uudelleen.</div>
+    <div class="topbar" id="lock-topbar">
+      <button class="theme-btn" id="theme-btn-l" onclick="toggleTheme()"></button>
+      <button class="lang-btn" id="lang-btn-l" onclick="changeLanguage(this)"></button>
     </div>
+    <div id="lock-box" class="lock-box"></div>
   </div> <!-- lock screen end -->
 
   <div class="app" id="app" style="display: none;">
+    <div class="topbar" id="page-topbar">
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()"></button>
+      <button class="lang-btn" id="lang-btn" onclick="changeLanguage(this)"></button>
+      <button class="view-btn" id="logout-btn" onclick="logout()"></button>
+    </div>
 
     <div class="browse-tab" id="browse-tab">
       <div id="browse-search"></div>

@@ -29,6 +29,8 @@ async function logout() {
 async function showApp() {
     document.getElementById('lock-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
+    document.getElementById('email-input').value = '';
+    document.getElementById('lock-input').value = '';
     await loadRecipes();
     console.log(recipes);
     render();
@@ -38,9 +40,6 @@ sb.auth.getSession().then(({ data: { session } }) => {
     if (session) showApp();
 });
 
-document.getElementById('lock-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') unlock();
-});
 
 // -- load
 
@@ -199,6 +198,13 @@ const langsList =
     Deatails_UnitsConverted: 'Some units have been converted from imperial to metric. Original values shown in brackets.',
     Details_Servings: 'Servings',
 
+    Lock_give_pass: 'Input password',
+    Lock_head: 'Recipe archive',
+    Lock_email: 'Email',
+    Lock_logIn: 'Log in',
+    Lock_pass: 'Password',
+    Lock_tryAgain: 'Try again',
+
     LanguageBtn: 'Suomeksi',
     Images_selected: 'image selected',
     Images2_selected: 'images selected',
@@ -237,6 +243,13 @@ const langsList =
     Details_UnitsConverted: 'Joitain arvoja on muunnettu metrijärjestelmään. Alkuperäiset suluissa.',
     Details_Servings: 'Annokset',
 
+    Lock_give_pass: 'Anna salasana',
+    Lock_head: 'Resepti arkisto',
+    Lock_email: 'Sähköposti',
+    Lock_logIn: 'Kirjaudu sisään',
+    Lock_pass: 'Salasana',
+    Lock_tryAgain: 'Yritä uudelleen',
+
     LanguageBtn: 'In english',
 
     Images_selected: 'kuva valittu',
@@ -253,7 +266,7 @@ const langsList =
 let currentLang = localStorage.getItem('language') ?? 'english';
 let language = langsList[currentLang];
 
-function changeLanguage() {
+function changeLanguage(from) {
   currentLang = currentLang === 'english' ? 'finnish' : 'english';
   language = langsList[currentLang];
   localStorage.setItem('language', currentLang);
@@ -269,7 +282,7 @@ function changeLanguage() {
     btn.textContent = IsDark ? language.ThemeL : language.ThemeD;
   });
 
-  render();
+  from.id === 'lang-btn-l' ? renderLock() : render()
 }
 
 function initLanguage() {
@@ -378,6 +391,27 @@ function filteredRecipes() {
 function fmtAmount(amount, mult) {
   const v = amount * mult;
   return v % 1 === 0 ? v : parseFloat(v.toFixed(2));
+}
+
+// ── Lock screen ────────────────────────────────────────────────────────────────
+
+function renderLock() {
+  const texte = document.getElementById('email-input')?.value ?? '';
+  const textp = document.getElementById('lock-input')?.value ?? '';
+  const div = document.getElementById('lock-box');
+  div.innerHTML = `
+    <h2>${language.Lock_head}</h2>
+    <p>${language.Lock_give_pass}</p>
+    <input type="email" id="email-input" placeholder="${language.Lock_email}">
+    <input type="password" id="lock-input" placeholder="${language.Lock_pass}">
+    <button id="lock-btn" class="lock-btn" onclick="unlock()">${language.Lock_logIn}</button>
+    <div id="lock-error" class="lock-error">${language.Lock_tryAgain}</div>
+  `;
+  document.getElementById('lock-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') unlock();
+  });
+  document.getElementById('email-input').value = texte;
+  document.getElementById('lock-input').value = textp;
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
@@ -685,7 +719,7 @@ function saveEdit() {
   };
 
   recipes = recipes.map(x => x.id === detailId ? updated : x);
-  saveRecipes(recipes);
+  saveRecipes(updated);
   view = 'detail';
   render();
 }
@@ -979,3 +1013,4 @@ function toggleTheme() {
 
 applyTheme();
 initLanguage();
+renderLock();
