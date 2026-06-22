@@ -706,7 +706,8 @@ document.getElementById('browse-pills').addEventListener('click', e => {
 document.getElementById('browse-results').addEventListener('click', e => {
   const card = e.target.closest('[data-id]');
   if (card) {
-    detailId = card.dataset.id;
+    const raw = card.dataset.id;
+    detailId = isNaN(raw) ? raw : Number(raw);  // keep 's1'/'s2' as strings, convert number ids
     servingsMultiplier = 1;
     view = 'detail';
     render();
