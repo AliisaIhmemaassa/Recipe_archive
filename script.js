@@ -12,7 +12,6 @@ async function unlock() {
     if (error) {
         errEl.textContent = 'Väärä salasana.';
         errEl.style.display = 'block';
-        document.getElementById('email-input').value = '';
         document.getElementById('lock-input').value = '';
         document.getElementById('lock-input').focus();
     } else {
