@@ -13,7 +13,18 @@
     <button class="lang-btn" id="lang-btn" onclick="changeLanguage()"></button>
   </div>
 
-  <div class="app" id="app">
+  <div id="lock-screen" class="lock-screen">
+    <div id="lock-box" class="lock-box">
+      <h2>Varauskalenteri</h2>
+      <p>Anna salasana jatkaaksesi</p>
+      <input type="email" id="email-input" placeholder="Email">
+      <input type="password" id="lock-input" placeholder="Salasana">
+      <button id="lock-btn" class="lock-btn" onclick="unlock()">Kirjaudu sisään</button>
+      <div id="lock-error" class="lock-error">Väärä salasana, yritä uudelleen.</div>
+    </div>
+  </div> <!-- lock screen end -->
+
+  <div class="app" id="app" style="display: none;">
 
     <div class="browse-tab" id="browse-tab">
       <div id="browse-search"></div>
@@ -28,9 +39,10 @@
     <div class="detail-tab" id="detail-tab">
 
     </div>
-    
+
   </div>
   
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
 </body>
 </html>

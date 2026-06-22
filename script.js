@@ -1,14 +1,82 @@
+const { createClient } = supabase;
+const sb = createClient(
+  'https://kyduskguhdbckoboqmmf.supabase.co',
+  'sb_publishable_5izcObBiFo5KAu-TRtakDg_eCxg03cF'
+);
+
+async function unlock() {
+    const email = document.getElementById('email-input').value
+    const password = document.getElementById('lock-input').value;
+    const errEl = document.getElementById('lock-error');
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) {
+        errEl.textContent = 'Väärä salasana.';
+        errEl.style.display = 'block';
+        document.getElementById('email-input').value = '';
+        document.getElementById('lock-input').value = '';
+        document.getElementById('lock-input').focus();
+    } else {
+        showApp();
+    }
+}
+
+async function logout() {
+    await sb.auth.signOut();
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('lock-screen').style.display = 'flex';
+}
+
+async function showApp() {
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    await loadRecipes();
+    console.log(recipes);
+    render();
+}
+
+sb.auth.getSession().then(({ data: { session } }) => {
+    if (session) showApp();
+});
+
+document.getElementById('lock-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') unlock();
+});
+
+// -- load
+
+async function loadRecipes() {
+  const { data, error } = await sb.from('recipes').select('*').order('created_at');
+  if (error) { console.error(error); return; }
+  recipes = (data || []).map(row => row.recipe_item);
+  console.log('Recipes loaded.');
+}
+
+async function saveRecipes(recipe) {
+  const { data, error } = await sb
+    .from('recipes')
+    .upsert({ id: recipe.id, recipe_item: recipe })
+    .select();
+  if (error) { console.error(error); return null; }
+  return data?.[0]?.recipe_item ?? null;
+}
+
+async function deleteRecipe(id) {
+  const { error } = await sb.from('recipes').delete().eq('id', id);
+  if (error) { console.error(error); return false; }
+  return true;
+}
+
 const STORAGE_KEY = 'recipe_manager_v1';
 const SESSION_KEY = 'recipe_manager_session_v1';
 
-function loadRecipes() {
+function loadRecipesLocal() {
   try {
     const d = localStorage.getItem(STORAGE_KEY);
     return d ? JSON.parse(d) : [];
   } catch { return []; }
 }
 
-function saveRecipes(r) {
+function saveRecipesLocal(r) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(r));
 }
 
@@ -32,7 +100,7 @@ function saveSession() {
 const VALID_VIEWS = ['browse', 'add', 'detail', 'edit'];
 const session = loadSession();
 
-let recipes = loadRecipes();
+let recipes = [];
 let view = (session && VALID_VIEWS.includes(session.view)) ? session.view : 'browse';      // browse | add | detail | cook
 let detailId = session?.detailId ?? null;
 let servingsNum = '';
@@ -732,10 +800,10 @@ function attachEvents() {
 
   // Delete recipe
   const db = document.getElementById('delete-btn');
-  if (db) db.addEventListener('click', () => {
-    if (confirm('Delete this recipe?')) {
+  if (db) db.addEventListener('click', async () => {
+    const ok = await deleteRecipe(detailId);
+    if (ok) {
       recipes = recipes.filter(x => x.id !== detailId);
-      saveRecipes(recipes);
       view = 'browse';
       render();
     }
@@ -838,10 +906,9 @@ async function parseRecipe() {
   userContent.push({
     type: 'text',
     text: `Extract the recipe and return ONLY a JSON object (no markdown, no backticks) with this exact shape:
-{"name":"string","servings":number,"time":number,"tags":["string"],"ingredients":{"Header name":[{"name":"string","amounts":[{"amount":number,"unit":"string"}]}]},"steps":{"Section name":["string"]}}
+{"name":"string","time":number,"tags":["string"],"ingredients":{"Header name":[{"name":"string","amounts":[{"amount":number,"unit":"string"}]}]},"steps":{"Section name":["string"]}}
 - time: integer in total minutes (estimate if not given, no unit)
 - tags: 'sweet' or 'savory' (Only one!)
-- servings: if the recipe does NOT explicitly state the number of servings, return "none". DO NOT guess, estimate, infer, or calculate servings from ingredient amounts. If it's not written, it's "none".
 - ingredients is an object where keys are section headers (use "none" if no sections)
 - if an ingredient has multiple amounts/units (e.g. "5dl (300g)"), list each as a separate object in amounts
 - if only one amount, amounts still has just one entry
@@ -851,17 +918,18 @@ async function parseRecipe() {
   });
 
   try {
-    const res = await fetch('http://localhost:3000', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 4000,
-        messages: [{ role: 'user', content: userContent }]
-      })
-    });
+    const res = await fetch(
+      'https://kyduskguhdbckoboqmmf.supabase.co/functions/v1/claude-proxy',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 4000,
+          messages: [{ role: 'user', content: userContent }]
+        })
+      }
+    );
     const data = await res.json();
     console.log(data.content[0].text);
     const raw = data.content.map(c => c.text || '').join('');
@@ -870,10 +938,10 @@ async function parseRecipe() {
 
     // Convert imperial units to metric
     const converted = convertRecipeUnits(parsed);
-    converted.id = 'r' + Date.now();
+    converted.id = Date.now()
 
     recipes.push(converted);
-    saveRecipes(recipes);
+    saveRecipes(converted);
     detailId = converted.id;
     servingsMultiplier = 1;
     uploadedImages = [];
@@ -908,6 +976,5 @@ function toggleTheme() {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
-render();
 applyTheme();
 initLanguage();
