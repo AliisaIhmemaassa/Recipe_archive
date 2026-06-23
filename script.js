@@ -205,6 +205,14 @@ const langsList =
     Deatails_UnitsConverted: 'Some units have been converted from imperial to metric. Original values shown in brackets.',
     Details_Servings: 'Servings',
 
+    Edit_head: 'Edit recipe',
+    Edit_img: 'Recipe image (optional)',
+    Edit_img_placehold: 'Click to upload image',
+    Edit_name: 'Name',
+    Edit_time: 'Time (min)',
+    Edit_ingredints: 'Ingredients (one per line: <br>[Header]<br> amount unit | name)',
+    Edit_steps: 'Steps (one per line)',
+
     Lock_head: 'Recipe archive',
     Lock_subhead: 'Log in to continue',
     Lock_email: 'Email',
@@ -214,6 +222,7 @@ const langsList =
 
     LanguageBtn: 'Suomeksi',
     Logout: 'Log out',
+    Save: 'Save',
 
     Images_selected: 'image selected',
     Images2_selected: 'images selected',
@@ -252,6 +261,14 @@ const langsList =
     Details_UnitsConverted: 'Joitain arvoja on muunnettu metrijärjestelmään. Alkuperäiset suluissa.',
     Details_Servings: 'Annokset',
 
+    Edit_head: 'Muokkaa reseptiä',
+    Edit_img: 'Respti kuva (valinnainen)',
+    Edit_img_placehold: 'Klikkaa lisätäksesi kuva',
+    Edit_name: 'Nimi',
+    Edit_time: 'Aika (min)',
+    Edit_ingredints: 'Ainesosat (yksi riville: <br>[Otsikko]<br> määrä yksikkö | nimi)',
+    Edit_steps: 'Vaiheet (yksi riville)',
+
     Lock_head: 'Resepti arkisto',
     Lock_subhead: 'Kirjaudu sisään jatkaaksesi',
     Lock_email: 'Sähköposti',
@@ -261,6 +278,7 @@ const langsList =
 
     LanguageBtn: 'In english',
     Logout: 'Kirjaudu ulos',
+    Save: 'Tallenna',
 
     Images_selected: 'kuva valittu',
     Images2_selected: 'kuvia valittu',
@@ -635,32 +653,31 @@ function renderDetail() {
 }
 
 function renderEdit() {
+  // TODO img placehold
   const r = getRecipes().find(x => x.id === detailId);
   if (!r) { view = 'browse'; render(); return; }
   const div = document.getElementById('add-tab');
   div.innerHTML = `
     <div class="topbar">
       <button class="back-btn" data-v="detail"><i class="ti ti-arrow-left"></i> ${language.Back}</button>
-      <h1>Edit recipe</h1>
+      <h1>${language.Edit_head}</h1>
     </div>
     <div class="panel">
-      <label>Recipe image (optional)</label>
+      <label>${language.Edit_img}</label>
       <div class="upload-area" id="upload-area">
         <i class="ti ti-camera" aria-hidden="true"></i>
-        ${r.image ? 'Replace image' : 'Click to upload an image'}
+        ${r.image ? 'Replace image' : language.Edit_img_placehold}
       </div>
       <input type="file" id="file-input" accept="image/*">
       <div id="img-preview" style="margin-top:8px">
         ${r.image ? `<img src="${r.image}" style="max-width:120px;max-height:120px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.12)">` : ''}
       </div>
 
-      <label>Name</label>
+      <label>${language.Edit_name}</label>
       <input type="text" id="edit-name" maxlength="70" value="${r.name}">
-      <label>Time (min)</label>
+      <label>${language.Edit_time}</label>
       <input type="number" id="edit-time" value="${r.time}">
-      <label>Servings</label>
-      <input type="number" id="edit-servings" value="${r.servings}">
-      <label>Ingredients (one per line: amount unit name)</label>
+      <label>${language.Edit_ingredints}</label>
 
       <textarea id="edit-ingredients">${
         Object.entries(r.ingredients).map(([h, ings]) =>
@@ -668,14 +685,14 @@ function renderEdit() {
           ings.map(i => i.amounts.map(a => `${a.amount} ${a.unit}`).join(' / ') + ' | ' + i.name).join('\n')
         ).join('\n\n')
       }</textarea>
-      <label>Steps (one per line)</label>
+      <label>${language.Edit_steps}</label>
       <textarea id="edit-steps">${
         Object.entries(r.steps).map(([h, steps]) =>
           (h !== 'none' ? `[${h}]\n` : '') + steps.join('\n')
         ).join('\n\n')
       }</textarea>
       <div class="btn-row">
-        <button class="btn-primary" id="save-edit-btn">Save</button>
+        <button class="btn-primary" id="save-edit-btn">${language.Save}</button>
       </div>
     </div>`;
 }
@@ -735,7 +752,6 @@ function saveEdit() {
     name: document.getElementById('edit-name').value,
     image,
     time: parseInt(document.getElementById('edit-time').value) || r.time,
-    servings: parseInt(document.getElementById('edit-servings').value) || r.servings,
     ingredients,
     steps: parseSection(document.getElementById('edit-steps').value),
     hasConversions
