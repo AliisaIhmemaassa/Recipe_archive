@@ -529,7 +529,7 @@ function renderResults() {
             ${r.image ? `<div class="recipe-card-image" style="background-image:url('${r.image}')"></div>` : ''}
             <div class="recipe-card-body">
               <h3>${r.name}</h3>
-              <div class="meta"><i class="ti ti-clock" aria-hidden="true"></i> ${r.time} min &nbsp;<i class="ti ti-users" aria-hidden="true"></i> ${r.servings}</div>
+              <div class="meta"><i class="ti ti-clock" aria-hidden="true"></i> ${r.time} min &nbsp;</div>
               <div class="tags">${r.tags.map(t => `<span class="pill${t === 'sweet' ? ' pill-sweet' : ''}">${t === 'sweet' ? language.Sweet : language.Savory}</span>`).join('')}</div>
             </div>
           </div>`).join('')}
@@ -584,13 +584,15 @@ function renderDetail() {
   servingsNum = servingsNum === '' ? 'x 1' : servingsNum
 
   div.innerHTML = `
-    <div class="topbar">
-      <button class="back-btn" data-v="browse"><i class="ti ti-arrow-left"></i> ${language.Back}</button>
-      <h1>${r.name}</h1>
-      ${isUser ? `
-        <button class="btn-danger" id="delete-btn" aria-label="Delete recipe"><i class="ti ti-trash" aria-hidden="true"></i></button>
-        <button class="view-btn" id="edit-btn" onclick="view='edit';render();" aria-label="Edit recipe"><i class="ti ti-edit"></i></button>
-      ` : ''}
+    <div class="detail-topbar">
+      <div class="detail-btn">
+        <button class="back-btn" data-v="browse"><i class="ti ti-arrow-left"></i> ${language.Back}</button>
+        ${isUser ? `<div style="display:flex;gap:6px">
+          <button class="btn-danger" id="delete-btn" aria-label="Delete recipe"><i class="ti ti-trash" aria-hidden="true"></i></button>
+          <button class="view-btn" id="edit-btn" onclick="view='edit';render();" aria-label="Edit recipe"><i class="ti ti-edit"></i></button>
+        </div>` : ''}
+      </div>
+      <h1 style="text-align:center">${r.name}</h1>
     </div>
 
     <div class="detail">
