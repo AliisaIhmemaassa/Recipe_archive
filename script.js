@@ -494,7 +494,7 @@ function renderSearch() {
       <h1><i class="ti ti-chef-hat" aria-hidden="true" style="margin-right:8px"></i>${language.Browse_head}</h1>
       <div style="display:flex;gap:8px">
         <button class="view-btn active" data-v="browse" onclick=debug();><i class="ti ti-layout-grid"></i></button>
-        <button class="view-btn" data-v="add"><i class="ti ti-plus"></i> ${language.Add}</button>
+        <button class="view-btn add" data-v="add"><i class="ti ti-plus"></i> ${language.Add}</button>
       </div>
     </div>
     <div class="search-row">

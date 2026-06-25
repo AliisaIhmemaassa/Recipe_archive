@@ -212,14 +212,20 @@ a:focus-visible {
   font-size: 13px;
   color: var(--text-muted);
 }
+
 .view-btn:hover {
   border-color: var(--accent);
   color: var(--text);
 }
+
 .view-btn.active {
   background: var(--accent-light);
   color: var(--accent-dark);
   border-color: var(--accent);
+}
+
+.view-btn.add {
+  min-width: 75px;
 }
 
 /* ── Search & filter ─────────────────────────────────────────────────────── */
